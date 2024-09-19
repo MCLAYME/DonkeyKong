@@ -28,11 +28,18 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
-	/////////////////////////////////////////////////////////////////////
-		// Función para disparar el proyectil
+	// Función para disparar el proyectil
 	UFUNCTION(BlueprintCallable, Category = "Shooting")
-	void FireProyectil( );
-	
+	void FireProyectil();
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	void Die();
+
+
+protected:
+	UFUNCTION()
+	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
 
 protected:
 
@@ -73,5 +80,13 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Salud", meta = (AllowPrivateAccess = "true"))
+	float Health;
+
+	UPROPERTY(VisibleAnywhere, Category = "Detección")
+	class USphereComponent* ProximitySphere;
+
+	UFUNCTION()
+	void OnProximityOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };
 

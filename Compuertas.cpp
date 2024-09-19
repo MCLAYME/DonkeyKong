@@ -4,37 +4,42 @@
 #include "Compuertas.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "DonkeyKongCharacter.h"
+#include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
-
 
 // Sets default values
 ACompuertas::ACompuertas()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	// Crear y configurar el BoxComponent
+	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+	RootComponent = TriggerBox;
 
-    // Crear el mesh de la compuerta
-    CompuertaMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CompuertaMesh"));
-    RootComponent = CompuertaMesh;
-    TamanioCompuerta = FVector(0.10f, 0.10f, 0.10f);
-    InicializarTamanio();
+	// Crear el componente visual de la compuerta
+	CompuertaVisual = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CompuertaVisual"));
+	CompuertaVisual->SetupAttachment(RootComponent);
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CompuertaMeshAsset(TEXT("StaticMesh'/Game/Meshes/CaveWall.CaveWall'"));
-	if (CompuertaMeshAsset.Succeeded())
-	{   
-		CompuertaMesh->SetStaticMesh(CompuertaMeshAsset.Object);
+	// Usar ConstructorHelpers para encontrar una malla en los assets
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"));
+
+	if (MeshAsset.Succeeded())
+	{
+		CompuertaVisual->SetStaticMesh(MeshAsset.Object);
 	}
 
-    // Crear el componente de colisión
-    TeleportBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TeleportBox"));
-    TeleportBox->SetupAttachment(RootComponent);
-    TeleportBox->SetBoxExtent(FVector(100.0f, 100.0f, 100.0f));
-    TeleportBox->OnComponentBeginOverlap.AddDynamic(this, &ACompuertas::TeletransportarJugador);
-    // Inicialización del componente de colisiSION  ;
-    // Configuración inicial
-    PosicionCompuerta = FVector::ZeroVector;
+	// Registrar la función para detectar colisiones
+	void Teletransportar(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 }
+
+/*void ACompuertas::crearCompuerta(FVector Location, FRotator Rotation)
+{
+	// Crear el objeto Compuerta en el mundo
+	GetWorld()->SpawnActor<ACompuertas>(ACompuertas::StaticClass(), Location, Rotation);
+
+
+}
+*/
 
 // Called when the game starts or when spawned
 void ACompuertas::BeginPlay()
@@ -49,29 +54,13 @@ void ACompuertas::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-void ACompuertas::InicializarTamanio()
-{
-    if (CompuertaMesh)
-    {
-        CompuertaMesh->SetRelativeScale3D(TamanioCompuerta);
-    }
 
-}
-void ACompuertas::TeletransportarJugador(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-    bool bFromSweep, const FHitResult& SweepResult)
-{
-    if (ACharacter* Jugador = Cast<ACharacter>(OtherActor))
-    {
-        if (Jugador && CompuertaDestino)
-        {
-            Jugador->SetActorLocation(CompuertaDestino->GetActorLocation());
-        }
-    }
-}
 
-void ACompuertas::ConfigurarPosicion(FVector NuevaPosicion)
+// Función que maneja el teletransporte cuando Donkey Kong entra en la colisión
+void ACompuertas::Teletransportar(AActor* ActorATeletransportar)
 {
-    PosicionCompuerta = NuevaPosicion;
+	if (ActorATeletransportar && DestinoTeletransporte != FVector::ZeroVector)
+	{
+		ActorATeletransportar->SetActorLocation(DestinoTeletransporte);
+	}
 }
-

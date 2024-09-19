@@ -6,8 +6,16 @@
 #include "GameFramework/GameModeBase.h"
 #include "DonkeyKongGameMode.generated.h"
 
+//class AMuro;
+class AMuroLadrillo;
+class AMuroPegajoso;
+class AMuroElectrico;
+class AMuroCongelado;
+class APlataformas;
 class ANave;
 class ACompuertas;
+class ACapsula;
+//class ADonkeyKongCharacter;
 /**
  *
  */
@@ -18,20 +26,20 @@ class ADonkeyKongGameMode : public AGameModeBase
 
 public:
 	ADonkeyKongGameMode();
-	void CrearCompuertas();
-
-public:
-	TMap<int32, ACompuertas*> CompuertaMap; // TMap para las compuertas
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Compuertas")
-	TSubclassOf<ACompuertas> CompuertaClass;
-	//Creamos nuestro TMap
+	void Chocar();
 protected:
 	virtual void BeginPlay() override;
+	// Platform class to spawn
+	void crearPlataforma();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plataformas")	
+	TArray<APlataformas*> componentesPlataforma;
+
+public:
+
+public:
 	virtual void Tick(float DeltaTime) override;
 
 };
 
-	
 
 

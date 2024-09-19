@@ -1,3 +1,5 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
@@ -5,20 +7,17 @@
 #include "Nave.generated.h"
 
 
-
 UCLASS()
 class DONKEYKONG_API ANave : public AActor
 {
 	GENERATED_BODY()
-
-public:
+	
+public:	
 	// Sets default values for this actor's properties
 	ANave();
-
 	// Componente de malla estática para la nave
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* NaveMesh;
-
 	// Variables para el movimiento entre dos puntos
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Nave")
 	FVector PuntoA;
@@ -44,10 +43,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:
+public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
 	// Velocidad de movimiento
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Nave")
 	float MovimientoNave;
@@ -55,4 +53,5 @@ public:
 	// Rotación en 180 grados
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Nave")
 	FRotator RotacionCambio;
+
 };

@@ -6,48 +6,40 @@
 #include "GameFramework/Actor.h"
 #include "Compuertas.generated.h"
 
-class UBoxComponent;
-
 UCLASS()
 class DONKEYKONG_API ACompuertas : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	ACompuertas();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	
 
-public:	
+protected:
+	
+		// Called when the game starts or when spawned
+		virtual void BeginPlay() override;
+	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	// Función para teletransportar al jugador
+	UFUNCTION()
+	void Teletransportar(AActor* ActorATeletransportar);
 
-    void InicializarTamanio();
+	// BoxComponent para detectar la colisión
+	UPROPERTY(VisibleAnywhere)
+	class UBoxComponent* TriggerBox;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Compuerta")
-    UStaticMeshComponent* CompuertaMesh;
-    // Tamaño personalizado para la compuerta
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Compuerta")
-    FVector TamanioCompuerta;
+	// Componente visual (malla estática)
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* CompuertaVisual;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Compuerta")
-    UBoxComponent* TeleportBox;
+	// Lugar de destino de teletransporte
+	UPROPERTY(EditAnywhere, Category = "Teletransporte")
+	FVector DestinoTeletransporte;
 
-    // Posiciones de las compuertas
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Compuerta")
-    FVector PosicionCompuerta;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Compuerta")
-    ACompuertas* CompuertaDestino;
-
-    UFUNCTION()
-    void TeletransportarJugador(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-        bool bFromSweep, const FHitResult& SweepResult);
-
-    // Función para configurar la posición de la compuerta
-    void ConfigurarPosicion(FVector NuevaPosicion);
 };
+

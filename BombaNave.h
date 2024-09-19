@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "BombaNave.generated.h"
 
+
 UCLASS()
 class DONKEYKONG_API ABombaNave : public AActor
 {
@@ -20,15 +21,16 @@ public:
 	// Velocidad de la bomba
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Bomba")
 	float Velocidad;
-	// Dirección del movimiento
+	// Función para manejar la colisión de la bomba
+	// Collision component
+	
 	FVector DireccionMovimiento;
-	// Función para disparar la bomba
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+		virtual void Tick(float DeltaTime) override;
 };

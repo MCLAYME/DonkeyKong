@@ -8,9 +8,15 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Muro.h"
+#include "MuroElectrico.h"
+#include "Engine/World.h"
 #include "Proyectil.h"
+#include "Capsula.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/SphereComponent.h"
 
-class AProyectil;
+
 
 //////////////////////////////////////////////////////////////////////////
 // ADonkeyKongCharacter
@@ -32,13 +38,13 @@ ADonkeyKongCharacter::ADonkeyKongCharacter()
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f); // ...at this rotation rate
-	GetCharacterMovement()->JumpZVelocity = 800.f;
+	GetCharacterMovement()->JumpZVelocity = 600.f;
 	GetCharacterMovement()->AirControl = 0.2f;
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 2000.0f; // The camera follows at this distance behind the character	
+	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create a follow camera
@@ -46,13 +52,30 @@ ADonkeyKongCharacter::ADonkeyKongCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+	Health = 100.0f;
+
+	ProximitySphere = CreateDefaultSubobject<USphereComponent>(TEXT("ProximitySphere"));
+	ProximitySphere->InitSphereRadius(500.0f);
+	ProximitySphere->SetupAttachment(RootComponent);
+
+	ProximitySphere->OnComponentBeginOverlap.AddDynamic(this, &ADonkeyKongCharacter::OnProximityOverlap);
+
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Input
+void ADonkeyKongCharacter::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	AMuro* Muro = Cast<AMuro>(OtherActor);
+	if (Muro)
+	{
+		Muro->Chocar();  // Llama al método Chocar() del muro
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("¡Personaje chocó con un muro!"));
+		// Aquí puedes agregar más lógica de reacción si es necesario
+	}
+}
 
 void ADonkeyKongCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -61,6 +84,7 @@ void ADonkeyKongCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("FireProyectil", IE_Pressed, this, &ADonkeyKongCharacter::FireProyectil);
+
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ADonkeyKongCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ADonkeyKongCharacter::MoveRight);
@@ -80,8 +104,6 @@ void ADonkeyKongCharacter::SetupPlayerInputComponent(class UInputComponent* Play
 	// VR headset functionality
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &ADonkeyKongCharacter::OnResetVR);
 }
-
-
 void ADonkeyKongCharacter::FireProyectil()
 {
 	//Spawnea el proyectil
@@ -93,7 +115,7 @@ void ADonkeyKongCharacter::FireProyectil()
 
 	//AProyectil* SpawnedProyectil = GetWorld()->SpawnActor<AProyectil>(AProyectil::StaticClass(), GetActorLocation(), GetActorRotation());
 
-	
+
 }
 
 
@@ -156,5 +178,30 @@ void ADonkeyKongCharacter::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
+	}
+}
+float ADonkeyKongCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Health -= DamageAmount;
+
+	if (Health <= 0)
+	{
+		Die();
+	}
+
+	return DamageAmount;
+}
+
+void ADonkeyKongCharacter::Die()
+{
+	Destroy();
+}
+
+void ADonkeyKongCharacter::OnProximityOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor->IsA(ACapsula::StaticClass()))
+	{
+		ACapsula* Capsula = Cast<ACapsula>(OtherActor);
+		Capsula->DetectarCharacter();
 	}
 }
